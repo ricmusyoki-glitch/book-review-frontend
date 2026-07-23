@@ -1,10 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const ReviewForm = ({ bookId, onSubmit }) => {
+const ReviewForm = ({
+  bookId,
+  reviewToEdit,
+  onSubmit,
+  onCancel,
+}) => {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (reviewToEdit) {
+      setRating(reviewToEdit.rating);
+      setComment(reviewToEdit.comment);
+    } else {
+      setRating(5);
+      setComment("");
+    }
+  }, [reviewToEdit]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,7 +30,7 @@ const ReviewForm = ({ bookId, onSubmit }) => {
     try {
       await onSubmit({
         book: bookId,
-        rating: Number(rating),
+        rating,
         comment,
       });
 
@@ -24,16 +39,16 @@ const ReviewForm = ({ bookId, onSubmit }) => {
     } catch (err) {
       console.error(err);
 
-      const response = err.response?.data;
+      const data = err.response?.data;
 
-      if (typeof response === "string") {
-        setError(response);
-      } else if (response?.detail) {
-        setError(response.detail);
-      } else if (response?.non_field_errors) {
-        setError(response.non_field_errors[0]);
+      if (typeof data === "string") {
+        setError(data);
+      } else if (data?.detail) {
+        setError(data.detail);
+      } else if (data?.non_field_errors) {
+        setError(data.non_field_errors[0]);
       } else {
-        setError("Failed to submit review.");
+        setError("Unable to submit review.");
       }
     } finally {
       setLoading(false);
@@ -41,66 +56,78 @@ const ReviewForm = ({ bookId, onSubmit }) => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-gray-100 rounded-lg p-6 mt-8"
-    >
-      <h3 className="text-xl font-bold mb-4">
-        Add Your Review
-      </h3>
+    <div className="mt-8 bg-white rounded-lg shadow border p-6">
+
+      <h2 className="text-2xl font-bold text-blue-600 mb-6">
+        {reviewToEdit ? "Edit Review" : "Leave a Review"}
+      </h2>
 
       {error && (
-        <div className="mb-4 text-red-600">
+        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
           {error}
         </div>
       )}
 
-      <div className="mb-4">
+      <form onSubmit={handleSubmit}>
 
         <label className="block font-semibold mb-2">
           Rating
         </label>
 
-        <select
-          value={rating}
-          onChange={(e) => setRating(e.target.value)}
-          className="w-full border rounded p-2"
-        >
+        <div className="flex gap-2 text-3xl mb-6">
           {[1, 2, 3, 4, 5].map((star) => (
-            <option key={star} value={star}>
-              {star} Star{star > 1 ? "s" : ""}
-            </option>
+            <button
+              key={star}
+              type="button"
+              onClick={() => setRating(star)}
+            >
+              {star <= rating ? "⭐" : "☆"}
+            </button>
           ))}
-        </select>
-
-      </div>
-
-      <div className="mb-4">
+        </div>
 
         <label className="block font-semibold mb-2">
           Comment
         </label>
 
         <textarea
-          rows="4"
+          rows={5}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          className="w-full border rounded p-2"
+          className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Write your review..."
           required
         />
 
-      </div>
+        <div className="flex gap-3 mt-6">
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded disabled:bg-gray-400"
-      >
-        {loading ? "Submitting..." : "Submit Review"}
-      </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded disabled:bg-gray-400"
+          >
+            {loading
+              ? "Saving..."
+              : reviewToEdit
+              ? "Update Review"
+              : "Submit Review"}
+          </button>
 
-    </form>
+          {reviewToEdit && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded"
+            >
+              Cancel
+            </button>
+          )}
+
+        </div>
+
+      </form>
+
+    </div>
   );
 };
 

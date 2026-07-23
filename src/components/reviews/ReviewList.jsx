@@ -1,11 +1,17 @@
 import ReviewCard from "./ReviewCard";
 
-const ReviewList = ({ reviews }) => {
+const ReviewList = ({
+  reviews,
+  onEdit,
+  onDelete,
+}) => {
   if (!reviews || reviews.length === 0) {
     return (
-      <p className="text-gray-500 mt-4">
-        No reviews yet.
-      </p>
+      <div className="bg-white rounded-lg shadow border p-6 text-center">
+        <p className="text-gray-500">
+          No reviews yet.
+        </p>
+      </div>
     );
   }
 
@@ -15,6 +21,8 @@ const ReviewList = ({ reviews }) => {
         <ReviewCard
           key={review.id}
           review={review}
+          onEdit={onEdit}
+          onDelete={onDelete}
         />
       ))}
     </div>
