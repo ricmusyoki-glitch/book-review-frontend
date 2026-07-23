@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import BookGrid from "../components/books/BookGrid";
 import BookForm from "../components/books/BookForm";
@@ -6,6 +6,8 @@ import bookService from "../services/bookService";
 
 const Books = () => {
   const [books, setBooks] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -16,10 +18,7 @@ const Books = () => {
 
       const data = await bookService.getBooks();
 
-      console.log("Books API Response:", data);
-
       setBooks(data.results);
-
       setError("");
     } catch (err) {
       console.error(err);
@@ -46,10 +45,23 @@ const Books = () => {
     }
   };
 
+  const filteredBooks = useMemo(() => {
+    return books.filter((book) => {
+      const search = searchTerm.toLowerCase();
+
+      return (
+        book.title.toLowerCase().includes(search) ||
+        book.author.toLowerCase().includes(search)
+      );
+    });
+  }, [books, searchTerm]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <h2 className="text-xl font-semibold">Loading books...</h2>
+        <h2 className="text-xl font-semibold">
+          Loading books...
+        </h2>
       </div>
     );
   }
@@ -57,15 +69,20 @@ const Books = () => {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <h2 className="text-xl text-red-600">{error}</h2>
+        <h2 className="text-xl text-red-600">
+          {error}
+        </h2>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-slate-100">
+
       <div className="max-w-7xl mx-auto p-8">
-        <div className="flex justify-between items-center mb-8">
+
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+
           <h1 className="text-4xl font-bold text-blue-600">
             Books
           </h1>
@@ -76,12 +93,39 @@ const Books = () => {
           >
             {showForm ? "Close Form" : "+ Add Book"}
           </button>
+
         </div>
 
-        {showForm && <BookForm onSubmit={handleCreateBook} />}
+        <div className="mb-6">
 
-        <BookGrid books={books} />
+          <input
+            type="text"
+            placeholder="Search by title or author..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+        </div>
+
+        {showForm && (
+          <div className="mb-8">
+            <BookForm onSubmit={handleCreateBook} />
+          </div>
+        )}
+
+        {filteredBooks.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <p className="text-gray-500 text-lg">
+              No books found.
+            </p>
+          </div>
+        ) : (
+          <BookGrid books={filteredBooks} />
+        )}
+
       </div>
+
     </div>
   );
 };
