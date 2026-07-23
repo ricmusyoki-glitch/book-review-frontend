@@ -23,7 +23,7 @@ const Navbar = () => {
           to="/dashboard"
           className="text-2xl font-bold text-blue-600"
         >
-          📚 Book Review App
+           Book Review App
         </Link>
 
         <div className="flex items-center gap-4">
