@@ -1,8 +1,24 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
-const BookCard = ({ book }) => {
+const BookCard = ({ book, onDelete }) => {
+  const { user } = useAuth();
+
+  const isOwner = user?.username === book.created_by;
+
+  const handleDelete = () => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${book.title}"?`
+    );
+
+    if (!confirmed) return;
+
+    onDelete(book.id);
+  };
+
   return (
     <div className="rounded-xl bg-white shadow-md p-6 hover:shadow-lg transition">
+
       <h2 className="text-2xl font-bold text-blue-600">
         {book.title}
       </h2>
@@ -18,6 +34,7 @@ const BookCard = ({ book }) => {
       </p>
 
       <div className="mt-4 space-y-1 text-sm text-gray-500">
+
         <p>
           <strong>Published:</strong> {book.published_date}
         </p>
@@ -34,14 +51,29 @@ const BookCard = ({ book }) => {
         <p>
           <strong>Reviews:</strong> {book.review_count}
         </p>
+
       </div>
 
-      <Link
-        to={`/books/${book.id}`}
-        className="mt-5 inline-block rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-      >
-        View Details
-      </Link>
+      <div className="mt-6 flex gap-3">
+
+        <Link
+          to={`/books/${book.id}`}
+          className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        >
+          View Details
+        </Link>
+
+        {isOwner && (
+          <button
+            onClick={handleDelete}
+            className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+          >
+            Delete
+          </button>
+        )}
+
+      </div>
+
     </div>
   );
 };

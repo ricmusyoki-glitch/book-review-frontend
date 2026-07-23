@@ -1,6 +1,6 @@
 import BookCard from "./BookCard";
 
-const BookGrid = ({ books }) => {
+const BookGrid = ({ books, onDelete }) => {
   if (books.length === 0) {
     return (
       <p className="text-center text-gray-500">
@@ -15,6 +15,7 @@ const BookGrid = ({ books }) => {
         <BookCard
           key={book.id}
           book={book}
+          onDelete={onDelete}
         />
       ))}
     </div>

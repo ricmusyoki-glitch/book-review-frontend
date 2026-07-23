@@ -45,6 +45,24 @@ const Books = () => {
     }
   };
 
+  const handleDeleteBook = async (bookId) => {
+    try {
+      await bookService.deleteBook(bookId);
+
+      setBooks((prevBooks) =>
+        prevBooks.filter((book) => book.id !== bookId)
+      );
+    } catch (err) {
+      console.error(err);
+
+      if (err.response?.status === 403) {
+        alert("You can only delete books that you created.");
+      } else {
+        alert("Failed to delete book.");
+      }
+    }
+  };
+
   const filteredBooks = useMemo(() => {
     return books.filter((book) => {
       const search = searchTerm.toLowerCase();
@@ -121,7 +139,10 @@ const Books = () => {
             </p>
           </div>
         ) : (
-          <BookGrid books={filteredBooks} />
+          <BookGrid
+            books={filteredBooks}
+            onDelete={handleDeleteBook}
+          />
         )}
 
       </div>
